@@ -2,28 +2,30 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+require("dotenv").config();
 
+// Models
 const Patient = require("./models/Patient");
 const User = require("./models/User");
 const Test = require("./models/Test");
 const Booking = require("./models/Booking");
 const Doctor = require("./models/Doctor");
 const LabTechnician = require("./models/LabTechnician");
-
-require("dotenv").config();
+const Report = require("./models/Report");
 
 const app = express();
 
-// Middleware
+// ================= MIDDLEWARE =================
+
 app.use(cors());
 app.use(express.json());
 
-// Home route
+// ================= HOME AND HEALTH =================
+
 app.get("/", (req, res) => {
     res.send("LabCare Backend is Running!");
 });
 
-// Health check
 app.get("/api/health", (req, res) => {
     res.json({
         success: true,
@@ -31,7 +33,6 @@ app.get("/api/health", (req, res) => {
     });
 });
 
-// Test route
 app.get("/api/test", (req, res) => {
     res.json({
         success: true,
@@ -70,6 +71,7 @@ app.post("/api/patients", async (req, res) => {
             message: "Patient registered successfully",
             patient
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -87,6 +89,7 @@ app.get("/api/patients", async (req, res) => {
             success: true,
             patients
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -108,6 +111,7 @@ app.get("/api/patients/:id", async (req, res) => {
         }
 
         res.json({ success: true, patient });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -137,6 +141,7 @@ app.put("/api/patients/:id", async (req, res) => {
             message: "Patient updated successfully",
             patient
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -161,6 +166,7 @@ app.delete("/api/patients/:id", async (req, res) => {
             success: true,
             message: "Patient deleted successfully"
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -198,6 +204,7 @@ app.post("/api/tests", async (req, res) => {
             message: "Test added successfully",
             test: newTest
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -212,6 +219,7 @@ app.get("/api/tests", async (req, res) => {
         const tests = await Test.find().sort({ createdAt: -1 });
 
         res.json({ success: true, tests });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -241,6 +249,7 @@ app.put("/api/tests/:id", async (req, res) => {
             message: "Test updated successfully",
             test
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -265,6 +274,7 @@ app.delete("/api/tests/:id", async (req, res) => {
             success: true,
             message: "Test deleted successfully"
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -312,6 +322,7 @@ app.post("/api/bookings", async (req, res) => {
             message: "Booking created successfully!",
             booking
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -329,6 +340,7 @@ app.get("/api/bookings", async (req, res) => {
             .sort({ createdAt: -1 });
 
         res.json({ success: true, bookings });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -360,6 +372,7 @@ app.put("/api/bookings/:id", async (req, res) => {
             message: "Booking updated successfully!",
             booking
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -389,6 +402,7 @@ app.put("/api/bookings/:id/cancel", async (req, res) => {
             message: "Booking cancelled successfully!",
             booking
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -435,6 +449,7 @@ app.post("/api/doctors", async (req, res) => {
             message: "Doctor added successfully",
             doctor
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -449,6 +464,7 @@ app.get("/api/doctors", async (req, res) => {
         const doctors = await Doctor.find().sort({ createdAt: -1 });
 
         res.json({ success: true, doctors });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -478,6 +494,7 @@ app.put("/api/doctors/:id", async (req, res) => {
             message: "Doctor updated successfully",
             doctor
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -502,6 +519,7 @@ app.delete("/api/doctors/:id", async (req, res) => {
             success: true,
             message: "Doctor deleted successfully"
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -548,6 +566,7 @@ app.post("/api/lab-technicians", async (req, res) => {
             message: "Lab Technician added successfully!",
             technician
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -566,6 +585,7 @@ app.get("/api/lab-technicians", async (req, res) => {
             success: true,
             technicians
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -595,6 +615,7 @@ app.put("/api/lab-technicians/:id", async (req, res) => {
             message: "Lab Technician updated successfully!",
             technician
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -619,8 +640,10 @@ app.delete("/api/lab-technicians/:id", async (req, res) => {
 
         res.json({
             success: true,
-            message: "Lab Technician deleted successfully!"
+            message: "Lab Technician deleted successfully!",
+            technician
         });
+
     } catch (error) {
         res.status(500).json({
             success: false,
@@ -628,6 +651,188 @@ app.delete("/api/lab-technicians/:id", async (req, res) => {
         });
     }
 });
+
+// ================= REPORT MANAGEMENT =================
+
+// Create Report - Lab Technician
+app.post("/api/reports", async (req, res) => {
+    try {
+        const { bookingId, results, technicianId } = req.body;
+
+        if (!bookingId || !Array.isArray(results) || results.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Booking ID and test results are required"
+            });
+        }
+
+        const booking = await Booking.findById(bookingId);
+
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                message: "Booking not found"
+            });
+        }
+
+        const existingReport = await Report.findOne({
+            booking: booking._id
+        });
+
+        if (existingReport) {
+            return res.status(409).json({
+                success: false,
+                message: "Report already exists for this booking"
+            });
+        }
+
+        let technician = null;
+
+        if (technicianId) {
+            technician = await LabTechnician.findById(technicianId);
+
+            if (!technician) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Lab Technician not found"
+                });
+            }
+        }
+
+        const report = await Report.create({
+            booking: booking._id,
+            patient: booking.patient,
+            test: booking.test,
+            results,
+            technician: technician ? technician._id : null
+        });
+
+        res.status(201).json({
+            success: true,
+            message: "Report created successfully",
+            report
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
+
+// Get All Reports
+app.get("/api/reports", async (req, res) => {
+    try {
+        const reports = await Report.find()
+            .populate("patient", "patientId name phone")
+            .populate("test", "testId testName price")
+            .populate("booking", "bookingId appointmentDate")
+            .populate("technician")
+            .populate("doctorReview.reviewedBy")
+            .sort({ createdAt: -1 });
+
+        res.json({
+            success: true,
+            reports
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
+
+// Get One Report
+app.get("/api/reports/:id", async (req, res) => {
+    try {
+        const report = await Report.findById(req.params.id)
+            .populate("patient", "patientId name phone")
+            .populate("test", "testId testName price")
+            .populate("booking", "bookingId appointmentDate")
+            .populate("technician")
+            .populate("doctorReview.reviewedBy");
+
+        if (!report) {
+            return res.status(404).json({
+                success: false,
+                message: "Report not found"
+            });
+        }
+
+        res.json({
+            success: true,
+            report
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
+
+// Doctor Completes Report Checking
+app.patch("/api/reports/:id/review", async (req, res) => {
+    try {
+        const { remarks, doctorId } = req.body;
+
+        if (!doctorId) {
+            return res.status(400).json({
+                success: false,
+                message: "Doctor ID is required"
+            });
+        }
+
+        const doctor = await Doctor.findById(doctorId);
+
+        if (!doctor) {
+            return res.status(404).json({
+                success: false,
+                message: "Doctor not found"
+            });
+        }
+
+        const report = await Report.findById(req.params.id);
+
+        if (!report) {
+            return res.status(404).json({
+                success: false,
+                message: "Report not found"
+            });
+        }
+
+        if (report.status === "Reviewed") {
+            return res.status(400).json({
+                success: false,
+                message: "Report has already been reviewed"
+            });
+        }
+
+        report.doctorReview.remarks = remarks || "";
+        report.doctorReview.reviewedBy = doctor._id;
+        report.doctorReview.reviewedAt = new Date();
+        report.status = "Reviewed";
+
+        await report.save();
+
+        res.json({
+            success: true,
+            message: "Doctor completed checking successfully!",
+            report
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
+
 // ================= USER MANAGEMENT =================
 
 // Add User
@@ -749,9 +954,15 @@ app.delete("/api/users/:id", async (req, res) => {
         });
     }
 });
+
 // ================= SERVER AND DATABASE =================
 
 const PORT = process.env.PORT || 5000;
+
+if (!process.env.MONGO_URI) {
+    console.error("MONGO_URI is missing from your .env file");
+    process.exit(1);
+}
 
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
@@ -763,4 +974,5 @@ mongoose.connect(process.env.MONGO_URI)
     })
     .catch((error) => {
         console.error("MongoDB Connection Failed:", error.message);
+        process.exit(1);
     });

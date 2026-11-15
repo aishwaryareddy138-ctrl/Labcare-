@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import "./App.css";
 
-const API = "http://localhost:5000/api";
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const menu = [
   "Dashboard",
@@ -86,6 +86,7 @@ function App() {
   const [patients, setPatients] = useState([]);
   const [loadingPatients, setLoadingPatients] = useState(false);
   const [editingPatientId, setEditingPatientId] = useState(null);
+  const [savingPatient, setSavingPatient] = useState(false);
 
   // Test states
   const [test, setTest] = useState(emptyTest);
@@ -273,7 +274,17 @@ function App() {
   // Register or update patient
   const registerPatient = async (e) => {
     e.preventDefault();
+
+    if (savingPatient) return;
+
     setMessage("");
+
+    if (!patient.name.trim() || !patient.age || !patient.gender || !patient.phone.trim()) {
+      setMessage("Please fill in all required patient fields.");
+      return;
+    }
+
+    setSavingPatient(true);
 
     try {
       const url = editingPatientId
@@ -283,35 +294,50 @@ function App() {
       const response = await fetch(url, {
         method: editingPatientId ? "PUT" : "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
+          "Accept": "application/json"
         },
         body: JSON.stringify({
           ...patient,
+          name: patient.name.trim(),
+          phone: patient.phone.trim(),
+          email: patient.email.trim(),
+          address: patient.address.trim(),
           age: Number(patient.age)
         })
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data = {};
+
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch {
+        throw new Error(`Server returned an invalid response (HTTP ${response.status}).`);
+      }
 
       if (!response.ok) {
-        throw new Error(data.message || "Could not save patient");
+        throw new Error(data.message || `Could not save patient (HTTP ${response.status}).`);
       }
 
-      if (editingPatientId) {
-        setMessage("Patient updated successfully!");
-      } else {
-        setMessage(
-          "Patient registered successfully! Patient ID: " +
-          (data.patient?.patientId || "")
-        );
-      }
+      setMessage(
+        editingPatientId
+          ? "Patient updated successfully!"
+          : `Patient registered successfully! Patient ID: ${data.patient?.patientId || "Saved"}`
+      );
 
       setPatient({ ...emptyPatient });
       setEditingPatientId(null);
 
       await loadPatients();
     } catch (error) {
-      setMessage("Error: " + error.message);
+      setMessage(
+        error.message === "Failed to fetch"
+          ? `Cannot reach the backend at ${API}. Make sure your backend server is running and CORS is enabled.`
+          : "Error: " + error.message
+      );
+    } finally {
+      setSavingPatient(false);
     }
   };
 
@@ -1363,8 +1389,12 @@ function App() {
                   placeholder="Enter address"
                 />
 
-                <button type="submit">
-                  {editingPatientId ? "Update Patient" : "Register Patient"}
+                <button type="submit" disabled={savingPatient}>
+                  {savingPatient
+                    ? "Saving..."
+                    : editingPatientId
+                      ? "Update Patient"
+                      : "Register Patient"}
                 </button>
 
                 {editingPatientId && (
